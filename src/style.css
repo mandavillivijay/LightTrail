@@ -1,0 +1,557 @@
+/* =============================================
+   LightTrail – Global Styles
+   Cinematic dark theme with neon accents
+   ============================================= */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-bg: #050507;
+  --color-surface: rgba(255, 255, 255, 0.04);
+  --color-surface-hover: rgba(255, 255, 255, 0.08);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-text: #e8e8f0;
+  --color-text-muted: rgba(232, 232, 240, 0.5);
+
+  /* Neon palette */
+  --neon-blue:   #00d4ff;
+  --neon-pink:   #ff2d78;
+  --neon-purple: #bf5af2;
+  --neon-green:  #39ff14;
+  --neon-gold:   #ffcc00;
+  --neon-cyan:   #00fff7;
+
+  /* Active neon – overridden by JS */
+  --neon-active: var(--neon-blue);
+
+  --font-primary: 'Outfit', 'Inter', sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --panel-blur: blur(20px);
+
+  --transition-fast: 0.15s ease;
+  --transition-med:  0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg);
+  font-family: var(--font-primary);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =============================================
+   Stage – webcam + canvas stack
+   ============================================= */
+#stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+#webcam {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Mirror like a selfie */
+}
+
+#trail-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Dark cinematic overlay on webcam */
+#stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(0,0,0,0.35) 0%,
+    rgba(0,0,0,0.15) 50%,
+    rgba(0,0,0,0.45) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+#trail-canvas { z-index: 2; }
+
+/* =============================================
+   Permission / Loading Overlay
+   ============================================= */
+#start-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #0d0d1a 0%, #050507 100%);
+  gap: 28px;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+#start-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.overlay-logo {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: -2px;
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple), var(--neon-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: logoGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes logoGlow {
+  from { filter: drop-shadow(0 0 12px rgba(0 212 255 / 0.6)); }
+  to   { filter: drop-shadow(0 0 32px rgba(255 45 120 / 0.8)); }
+}
+
+.overlay-tagline {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  font-weight: 300;
+  letter-spacing: 0.05em;
+}
+
+.btn-start {
+  padding: 16px 44px;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+  color: #fff;
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.btn-start:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 50px rgba(0, 212, 255, 0.65);
+}
+
+.overlay-note {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+/* =============================================
+   Loading spinner
+   ============================================= */
+#loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: #050507;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+#loading-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.spinner-ring {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: var(--neon-blue);
+  border-right-color: var(--neon-purple);
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.1em;
+}
+
+/* =============================================
+   HUD / Control Panel
+   ============================================= */
+#hud {
+  position: absolute;
+  z-index: 10;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px;
+  pointer-events: none;
+}
+
+.hud-logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 0 10px rgba(0 212 255 / 0.5));
+  pointer-events: all;
+}
+
+.hud-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 50px;
+  padding: 6px 14px;
+  backdrop-filter: var(--panel-blur);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #444;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.status-dot.active {
+  background: #39ff14;
+  box-shadow: 0 0 8px #39ff14;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 6px #39ff14; }
+  50%       { box-shadow: 0 0 16px #39ff14; }
+}
+
+/* =============================================
+   Left panel – color presets
+   ============================================= */
+#panel-colors {
+  position: absolute;
+  z-index: 10;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: all;
+}
+
+.color-swatch {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  position: relative;
+}
+
+.color-swatch::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transition: border-color var(--transition-fast);
+}
+
+.color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.color-swatch.active::after {
+  border-color: rgba(255,255,255,0.6);
+}
+
+.swatch-blue   { background: radial-gradient(circle, #00d4ff, #0055ff); box-shadow: 0 0 16px rgba(0,212,255,0.5); }
+.swatch-pink   { background: radial-gradient(circle, #ff2d78, #cc0055); box-shadow: 0 0 16px rgba(255,45,120,0.5); }
+.swatch-purple { background: radial-gradient(circle, #bf5af2, #7a00cc); box-shadow: 0 0 16px rgba(191,90,242,0.5); }
+.swatch-green  { background: radial-gradient(circle, #39ff14, #00aa00); box-shadow: 0 0 16px rgba(57,255,20,0.5); }
+.swatch-gold   { background: radial-gradient(circle, #ffcc00, #ff8800); box-shadow: 0 0 16px rgba(255,204,0,0.5); }
+.swatch-cyan   { background: radial-gradient(circle, #00fff7, #0088cc); box-shadow: 0 0 16px rgba(0,255,247,0.5); }
+
+/* =============================================
+   Bottom Control Bar
+   ============================================= */
+#control-bar {
+  position: absolute;
+  z-index: 10;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(10, 10, 20, 0.6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 12px 20px;
+  backdrop-filter: var(--panel-blur);
+  pointer-events: all;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: calc(100vw - 48px);
+}
+
+.ctrl-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-primary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+  white-space: nowrap;
+}
+
+.ctrl-btn:hover {
+  background: var(--color-surface-hover);
+  border-color: rgba(255,255,255,0.18);
+  transform: translateY(-1px);
+}
+
+.ctrl-btn.active {
+  background: rgba(var(--neon-r, 0), var(--neon-g, 212), var(--neon-b, 255), 0.15);
+  border-color: rgba(var(--neon-r, 0), var(--neon-g, 212), var(--neon-b, 255), 0.5);
+  color: var(--neon-active);
+  box-shadow: 0 0 12px rgba(var(--neon-r, 0), var(--neon-g, 212), var(--neon-b, 255), 0.2);
+}
+
+.ctrl-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.ctrl-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--color-border);
+}
+
+/* Slider group */
+.ctrl-slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 110px;
+}
+
+.ctrl-slider-label {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+.ctrl-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border);
+  outline: none;
+  cursor: pointer;
+}
+
+.ctrl-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--neon-active);
+  box-shadow: 0 0 8px var(--neon-active);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+
+.ctrl-slider::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 16px var(--neon-active);
+}
+
+/* =============================================
+   Finger count badge
+   ============================================= */
+#finger-badge {
+  position: absolute;
+  z-index: 10;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.badge-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.badge-fingers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.finger-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.finger-indicator.lit {
+  background: var(--neon-active);
+  box-shadow: 0 0 10px var(--neon-active);
+}
+
+/* =============================================
+   Screenshot flash effect
+   ============================================= */
+#flash {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.05s ease;
+}
+
+#flash.flashing {
+  opacity: 0.8;
+}
+
+/* =============================================
+   Toast notifications
+   ============================================= */
+#toast-container {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(10, 10, 20, 0.85);
+  border: 1px solid var(--color-border);
+  backdrop-filter: var(--panel-blur);
+  border-radius: 50px;
+  padding: 8px 20px;
+  font-size: 0.8rem;
+  color: var(--color-text);
+  white-space: nowrap;
+  animation: toastIn 0.3s ease forwards, toastOut 0.3s ease 2s forwards;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-10px); }
+}
+
+/* =============================================
+   Gesture hint
+   ============================================= */
+#gesture-hint {
+  position: absolute;
+  bottom: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.05em;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* =============================================
+   Responsive / compact
+   ============================================= */
+@media (max-width: 600px) {
+  #panel-colors { left: 10px; }
+  #finger-badge { right: 10px; }
+  #control-bar  { bottom: 14px; padding: 10px 12px; gap: 8px; }
+  .ctrl-btn { padding: 8px 10px; font-size: 0.72rem; }
+}
